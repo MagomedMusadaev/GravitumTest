@@ -3,9 +3,11 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"github.com/firstProject/internal/domain"
 	"github.com/firstProject/internal/repository/postgres"
 	"github.com/gorilla/mux"
+	"log/slog"
 	"net/http"
 	"strconv"
 )
@@ -28,9 +30,13 @@ func NewUserHandler(userRepo postgres.UserRepository) UserHandler {
 
 // CreateUser обрабатывает POST-запрос на создание нового пользователя
 func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	const op = "internal/handler/UserHandler.CreateUser"
+
 	var user domain.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		http.Error(w, "Ошибка при разборе данных пользователя: "+err.Error(), http.StatusBadRequest)
+		msgErr := "Ошибка при разборе данных пользователя"
+		slog.Error(op, msgErr, err)
+		http.Error(w, msgErr+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -46,10 +52,14 @@ func (h *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 // GetUser обрабатывает GET-запрос на получение информации о пользователе по ID
 func (h *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	const op = "internal/handler/UserHandler.GetUser"
+
 	vars := mux.Vars(r)
 	userID, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
-		http.Error(w, "Некорректный ID пользователя", http.StatusBadRequest)
+		msgErr := "Некорректный ID пользователя"
+		slog.Error(op, msgErr, err)
+		http.Error(w, msgErr, http.StatusBadRequest)
 		return
 	}
 
@@ -70,10 +80,14 @@ func (h *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 // UpdateUser обрабатывает PUT-запрос на обновление данных пользователя
 func (h *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	const op = "internal/handler/UserHandler.UpdateUser"
+
 	vars := mux.Vars(r)
 	userID, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
-		http.Error(w, "Некорректный ID пользователя", http.StatusBadRequest)
+		msgErr := "Некорректный ID пользователя"
+		slog.Error(op, msgErr, err)
+		http.Error(w, msgErr, http.StatusBadRequest)
 		return
 	}
 
@@ -84,8 +98,8 @@ func (h *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.ID = userID
-	if err := h.userRepo.Update(&user); err != nil {
-		if err == sql.ErrNoRows {
+	if err = h.userRepo.Update(&user); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
 			http.Error(w, "Пользователь не найден", http.StatusNotFound)
 			return
 		}

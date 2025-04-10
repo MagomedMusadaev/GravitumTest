@@ -55,8 +55,27 @@ Content-Type: application/json
 {
     "first_name": "John",
     "last_name": "Doe",
-    "email": "john@example.com"
+    "email": "john@example.com",
+    "password": "secure_password123"
 }
+```
+
+Ответ:
+```json
+{
+    "id": 1,
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john@example.com",
+    "password": "secure_password123"
+}
+```
+
+Валидация полей:
+- first_name: обязательное поле
+- last_name: обязательное поле
+- email: обязательное поле, должен быть валидным email адресом
+- password: обязательное поле, минимум 8 символов
 ```
 
 ### Получение пользователя
@@ -64,6 +83,22 @@ Content-Type: application/json
 ```http
 GET /users/{id}
 ```
+
+Ответ:
+```json
+{
+    "id": 1,
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john@example.com",
+    "password": "secure_password123"
+}
+```
+
+Возможные ответы:
+- 200 OK: пользователь найден
+- 404 Not Found: пользователь не найден
+- 400 Bad Request: некорректный ID пользователя
 
 ### Обновление пользователя
 
@@ -75,14 +110,31 @@ Content-Type: application/json
 {
     "first_name": "John",
     "last_name": "Doe",
-    "email": "john@example.com"
+    "email": "john@example.com",
+    "password": "new_password123"
 }
+```
+
+Ответ:
+```json
+{
+    "id": 1,
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john@example.com",
+    "password": "new_password123"
+}
+```
+
+Возможные ответы:
+- 200 OK: данные пользователя обновлены
+- 404 Not Found: пользователь не найден
+- 400 Bad Request: некорректные данные или ID пользователя
 ```
 
 ## Структура проекта
 
-```
-.
+```.
 ├── cmd/
 │   └── app/         # Точка входа приложения
 │       └── main.go
